@@ -11,7 +11,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.patientvisits"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 37
         versionCode = 1
         versionName = "1.0"
@@ -35,7 +35,6 @@ android {
         compose = true
     }
     testOptions {
-        // Lets plain JVM unit tests touch Android stubs (e.g. Log) without crashing.
         unitTests.isReturnDefaultValues = true
     }
 }
