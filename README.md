@@ -89,4 +89,3 @@ app/src/main/java/com/example/patientvisits/
 - The auth token is stored unencrypted in DataStore.
 - Sync is push-only; server data is not pulled into the app.
 - Visit forms send only the question they ask (`on_diet` or `on_drugs`).
-- The app was written without access to the live API (the backend returned 503 during development), so the request and response shapes follow the Postman collection but have not been exercised end to end.

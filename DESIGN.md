@@ -2,22 +2,20 @@
 
 ## Decisions
 
-1. **Offline-first, Room as the source of truth.** Every save writes to Room first and returns immediately; each row carries a `synced` flag. `SyncWorker` (WorkManager, network constraint, exponential backoff) pushes pending rows in dependency order: patients, then vitals and visits. Failures leave rows unsynced and are retried, so the UI never blocks on the network and nothing is lost offline. A 409 from the server counts as delivered, so a retry after a lost response cannot loop forever.
-2. **Pure domain layer with validation outside the UI.** `BmiCalculator`, the validators and the models have no Android dependencies and are unit tested, including boundary values (18.49/18.5, 24.99/25.0). View models only orchestrate: validate, call the repository, emit a one-shot event that drives navigation (BMI < 25 goes to form A, otherwise form B).
-3. **Rules enforced twice.** Unique patient ID, one vitals row per patient per date and one assessment per type per date are checked in the repository for friendly errors and backed by Room unique indices, so a race cannot create duplicates.
-4. **Session as state.** Navigation observes a logged-in flow derived from the stored token, so signing out or an expired token moves the user to sign-in from anywhere without extra wiring.
-5. **Stack.** Compose + Navigation (type-safe routes), Room, Retrofit + kotlinx.serialization, DataStore for the token, manual DI via `AppContainer`. Chosen to keep the dependency graph small and every piece explainable.
+1. **Offline-first, with Room as the source of truth (architecture and data model).** Every save writes to Room and returns at once, so the UI never waits on the network and nothing is lost offline. A `synced` flag marks pending rows, and `SyncWorker` (WorkManager, network constraint, exponential backoff) pushes them in dependency order: patients, then vitals, then assessments. Data model: a patient (the unique Patient ID is the primary key) has many vitals rows and many assessment rows; each assessment row carries its form type (A or B), and synced rows store the server's id.
+2. **A pure domain layer.** `BmiCalculator`, the validators and the models have no Android dependencies and are unit tested, including the boundaries (18.49/18.5 and 24.99/25.0). View models only orchestrate: validate, save, emit a one-shot navigation event (BMI below 25 opens form A, otherwise form B).
+3. **Business rules enforced twice.** Unique Patient ID, one vitals row per patient per date and one assessment per type per date are checked in the repository (for friendly errors) and backed by Room unique indices, so a race cannot create duplicates.
 
-## KMP readiness
+Stack: Compose with type-safe Navigation, Room, Retrofit with kotlinx.serialization, DataStore for the token, manual DI. Chosen to keep the dependency graph small and explainable.
 
-Could move to a shared module as-is: `domain` (models, `BmiCalculator`, validators, repository interface), view models once `java.time` becomes `kotlinx-datetime`, and the DTOs/Retrofit-free API contract if Ktor replaces Retrofit.
-Cannot move: Compose UI as written (needs Compose Multiplatform), WorkManager sync, DataStore wiring, `AppContainer`, and the Room setup unless using Room KMP.
+## KMP
 
-## Left out or simplified
+Could move: `domain` (models, `BmiCalculator`, validators, repository interfaces) and the view models once `java.time` becomes `kotlinx-datetime`. Could move with a library swap: networking (Ktor) and storage (Room KMP). Could not: the Compose UI, WorkManager sync, DataStore wiring and `AppContainer`.
 
-- **Server ids are resolved by listing.** The API links vitals and visits by its own numeric ids and `patients/register` does not return one, so sync reads `patients/view`, matches on the unique Patient ID and stores the server id locally. Visits are linked to the vitals row for the same date (or the nearest one), using the id returned by `vital/add`.
-- **Visit forms send only the question they ask** (`on_diet` for form A, `on_drugs` for form B); the sample sends both, so a backend that requires both would need a default.
-- **Authentication is a plain email/password flow** (sign up, sign in, log out). The Sanctum token is kept in DataStore unencrypted; a real app would use encrypted storage. There is no token refresh, so a 401 during sync clears the session and returns the user to the sign-in screen.
-- **Sync is push-only.** No pull of server data, conflict resolution or `visits/view` usage; the local database is authoritative.
-- **Patients are never edited or deleted**, and the listing shows each patient's most recent vitals, as the brief requires.
-- **No pagination** on the listing; fine for the expected data size.
+## Left out or simplified, and why
+
+- **Server ids are found by listing.** The Postman collection shows no patient id in the `patients/register` response, yet vitals and visits link by the server's ids. So sync reads `patients/view`, matches on Patient ID and stores the server id. Based on the collection; not yet confirmed against the live API.
+- **Each visit form sends only its own question** (`on_diet` for A, `on_drugs` for B), because that is all the form asks. A backend requiring both would need a default.
+- **Plain email/password auth**, because the API needs a token. The token is unencrypted and never refreshed; a 401 returns the user to sign-in. Kept simple to stay in scope.
+- **Sync is push-only.** The brief asks only for submission, so there is no pull, conflict handling or `visits/view` use.
+- **No edit, delete or pagination.** Not required by the brief, and the expected data is small.
