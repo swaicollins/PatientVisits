@@ -29,7 +29,7 @@ class SignupViewModel(private val auth: AuthRepository) : ViewModel() {
     )
 
     sealed interface Event {
-        data object SignedUp : Event
+        data class SignedUp(val email: String) : Event
     }
 
     private val _state = MutableStateFlow(UiState())
@@ -64,7 +64,7 @@ class SignupViewModel(private val auth: AuthRepository) : ViewModel() {
             val form = current.form
             val outcome = auth.signup(form.firstName, form.lastName, form.email, form.password)
             _state.update { it.copy(loading = false, failure = outcome.toError()) }
-            if (outcome.toError() == null) _events.send(Event.SignedUp)
+            if (outcome.toError() == null) _events.send(Event.SignedUp(form.email.trim()))
         }
     }
 

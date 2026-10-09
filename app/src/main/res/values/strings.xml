@@ -77,6 +77,7 @@
     <string name="action_show">Show</string>
     <string name="action_hide">Hide</string>
     <string name="auth_go_to_signup">New here? Create an account</string>
+    <string name="auth_account_created">Account created. Please sign in to continue.</string>
     <string name="auth_go_to_login">Already have an account? Sign in</string>
     <string name="error_invalid_email">Enter a valid email address</string>
     <string name="error_password_short">Password must be at least 6 characters</string>

@@ -4,8 +4,12 @@ import com.example.patientvisits.domain.model.AssessmentType
 import kotlinx.serialization.Serializable
 
 
+/** [email] pre-fills the field and [accountCreated] shows the "account created" notice after sign-up. */
 @Serializable
-data object LoginDestination
+data class LoginDestination(
+    val email: String = "",
+    val accountCreated: Boolean = false
+)
 
 @Serializable
 data object SignupDestination

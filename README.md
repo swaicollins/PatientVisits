@@ -6,7 +6,7 @@ See [DESIGN.md](DESIGN.md) for the design decisions and what was simplified.
 
 ## Flow
 
-1. **Sign in / Create account**: email and password. Signing up logs the user in.
+1. **Sign in / Create account**: email and password. Signing up does not log the user in: after creating an account they are sent to Sign in (email pre-filled), because the bearer token comes from the sign-in call.
 2. **Patient listing**: shows name, age and last BMI status, with a visit-date filter and a Log out button. Tapping a patient starts a new visit; the register button adds a patient.
 3. **Registration**: Patient ID (must be unique), registration date, first and last name, date of birth, gender.
 4. **Vitals**: visit date, height (cm), weight (kg), BMI calculated automatically. One submission per patient per date.

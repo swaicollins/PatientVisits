@@ -11,11 +11,13 @@ import com.example.patientvisits.domain.validation.LoginField
 import com.example.patientvisits.ui.components.AppTextField
 import com.example.patientvisits.ui.components.CollectEvents
 import com.example.patientvisits.ui.components.ErrorBanner
+import com.example.patientvisits.ui.components.InfoBanner
 import com.example.patientvisits.ui.components.asMessage
 
 @Composable
 fun LoginScreen(
     viewModel: LoginViewModel,
+    accountCreated: Boolean = false,
     onLoggedIn: () -> Unit,
     onCreateAccount: () -> Unit
 ) {
@@ -35,6 +37,9 @@ fun LoginScreen(
         onSubmit = viewModel::onSubmit,
         onSwitch = onCreateAccount
     ) {
+        if (accountCreated && state.failure == null) {
+            InfoBanner(stringResource(R.string.auth_account_created))
+        }
         AppTextField(
             label = stringResource(R.string.label_email),
             value = state.form.email,

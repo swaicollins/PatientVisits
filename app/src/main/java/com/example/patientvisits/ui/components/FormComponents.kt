@@ -347,3 +347,17 @@ fun ErrorBanner(message: String, modifier: Modifier = Modifier) {
             .padding(12.dp)
     )
 }
+
+/** Neutral notice, e.g. "Account created. Please sign in." */
+@Composable
+fun InfoBanner(message: String, modifier: Modifier = Modifier) {
+    Text(
+        text = message,
+        color = MaterialTheme.colorScheme.onSecondaryContainer,
+        style = MaterialTheme.typography.bodyMedium,
+        modifier = modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.secondaryContainer, MaterialTheme.shapes.small)
+            .padding(12.dp)
+    )
+}

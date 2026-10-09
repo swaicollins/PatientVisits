@@ -19,7 +19,10 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class LoginViewModel(private val auth: AuthRepository) : ViewModel() {
+class LoginViewModel(
+    private val auth: AuthRepository,
+    initialEmail: String = ""
+) : ViewModel() {
 
     data class UiState(
         val form: LoginForm = LoginForm(),
@@ -32,7 +35,7 @@ class LoginViewModel(private val auth: AuthRepository) : ViewModel() {
         data object LoggedIn : Event
     }
 
-    private val _state = MutableStateFlow(UiState())
+    private val _state = MutableStateFlow(UiState(form = LoginForm(email = initialEmail)))
     val state: StateFlow<UiState> = _state.asStateFlow()
 
     private val _events = Channel<Event>(Channel.BUFFERED)
@@ -65,8 +68,8 @@ class LoginViewModel(private val auth: AuthRepository) : ViewModel() {
     }
 
     companion object {
-        fun factory(auth: AuthRepository): ViewModelProvider.Factory = viewModelFactory {
-            initializer { LoginViewModel(auth) }
+        fun factory(auth: AuthRepository, initialEmail: String = ""): ViewModelProvider.Factory = viewModelFactory {
+            initializer { LoginViewModel(auth, initialEmail) }
         }
     }
 }

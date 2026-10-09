@@ -65,7 +65,8 @@ class SessionManager(
             )
         )
         when {
-            response.isSuccessful && response.body()?.success != false -> login(email, password)
+            // No auto-login: the bearer token comes from the sign-in call, so the user signs in next
+            response.isSuccessful && response.body()?.success != false -> AuthResult.Success
             response.code() in REJECTED_CODES || (response.isSuccessful && response.body()?.success == false) ->
                 AuthResult.Rejected
             response.code() >= SERVER_ERROR_FROM -> AuthResult.ServerUnavailable

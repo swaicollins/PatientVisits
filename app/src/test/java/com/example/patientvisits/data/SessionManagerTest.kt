@@ -89,15 +89,16 @@ class SessionManagerTest {
     }
 
     @Test
-    fun signup_success_logsTheNewUserInStraightAway() = runTest {
+    fun signup_success_doesNotLogIn_theUserMustSignInToGetAToken() = runTest {
         val result = manager.signup(" Jane ", "Doe", "jane@example.com", "secret1")
 
         assertEquals(AuthResult.Success, result)
-        assertEquals(listOf("signup", "login"), api.calls)
+        assertEquals(listOf("signup"), api.calls)
         val sent = api.signupRequests.single()
         assertEquals("Jane", sent.firstname)
         assertEquals("Doe", sent.lastname)
-        assertEquals("token-abc", store.token())
+        assertNull(store.token())
+        assertFalse(manager.isLoggedIn.first())
     }
 
     @Test

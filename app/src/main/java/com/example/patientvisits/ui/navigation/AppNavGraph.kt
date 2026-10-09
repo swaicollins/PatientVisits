@@ -54,7 +54,7 @@ fun AppNavGraph(
             val onAuthScreen = current?.hasRoute<LoginDestination>() == true ||
                 current?.hasRoute<SignupDestination>() == true
             if (current != null && !onAuthScreen) {
-                navController.navigate(LoginDestination) {
+                navController.navigate(LoginDestination()) {
                     popUpTo(navController.graph.id) { inclusive = true }
                 }
             }
@@ -74,13 +74,16 @@ fun AppNavGraph(
 
     NavHost(
         navController = navController,
-        startDestination = if (initialLoggedIn) ListingDestination else LoginDestination
+        startDestination = if (initialLoggedIn) ListingDestination else LoginDestination()
     ) {
 
-        composable<LoginDestination> {
-            val viewModel: LoginViewModel = viewModel(factory = LoginViewModel.factory(auth))
+        composable<LoginDestination> { entry ->
+            val args = entry.toRoute<LoginDestination>()
+            val viewModel: LoginViewModel =
+                viewModel(factory = LoginViewModel.factory(auth, initialEmail = args.email))
             LoginScreen(
                 viewModel = viewModel,
+                accountCreated = args.accountCreated,
                 onLoggedIn = enterApp,
                 onCreateAccount = { navController.navigate(SignupDestination) }
             )
@@ -90,7 +93,12 @@ fun AppNavGraph(
             val viewModel: SignupViewModel = viewModel(factory = SignupViewModel.factory(auth))
             SignupScreen(
                 viewModel = viewModel,
-                onSignedUp = enterApp,
+                // Account exists but there is no token yet: send the user to sign-in with the email filled
+                onSignedUp = { email ->
+                    navController.navigate(LoginDestination(email = email, accountCreated = true)) {
+                        popUpTo<LoginDestination> { inclusive = true }
+                    }
+                },
                 onHaveAccount = { navController.popBackStack() }
             )
         }

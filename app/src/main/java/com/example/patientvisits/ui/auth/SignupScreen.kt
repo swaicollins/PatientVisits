@@ -17,14 +17,14 @@ import com.example.patientvisits.ui.components.asMessage
 @Composable
 fun SignupScreen(
     viewModel: SignupViewModel,
-    onSignedUp: () -> Unit,
+    onSignedUp: (email: String) -> Unit,
     onHaveAccount: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     CollectEvents(viewModel.events) { event ->
         when (event) {
-            SignupViewModel.Event.SignedUp -> onSignedUp()
+            is SignupViewModel.Event.SignedUp -> onSignedUp(event.email)
         }
     }
 
